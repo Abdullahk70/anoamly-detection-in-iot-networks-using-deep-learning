@@ -41,7 +41,7 @@ const Sidebar = () => {
               onClick={() => setSelectedTab(item.label)}
               className={`flex items-center gap-2 px-2 py-1 w-full text-left text-xs ${
                 selectedTab === item.label
-                  ? "bg-white shadow-md rounded-full"
+                  ? "bg-white shadow-md rounded-full transition-all duration-300 ease-in-out"
                   : "hover:bg-gray-200"
               }`}
             >
@@ -77,7 +77,7 @@ const Sidebar = () => {
               onClick={() => setSelectedTab(item.label)}
               className={`flex items-center gap-2 px-2 py-1 w-full text-left text-xs ${
                 selectedTab === item.label
-                  ? "bg-white shadow-md rounded-full"
+                  ? "bg-white shadow-md rounded-full transition-all duration-300 ease-in-out"
                   : "hover:bg-gray-200"
               }`}
             >
@@ -142,4 +142,3 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
-
