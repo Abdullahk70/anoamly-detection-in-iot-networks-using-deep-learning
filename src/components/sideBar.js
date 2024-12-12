@@ -11,7 +11,7 @@ import FileDownloadIcon from "@mui/icons-material/FileDownload";
 
 const Sidebar = () => {
   const [selectedTab, setSelectedTab] = useState("Home");
-  const [email, setEmail] = useState("example@email.com");
+  const [email, setEmail] = useState("abdullah@gmail.com");
   const [user, setUser] = useState("Muhammad Abdullah");
   const menuItems = [
     { icon: <HomeIcon fontSize="small" />, label: "Home" },
@@ -32,7 +32,7 @@ const Sidebar = () => {
     <div className="h-screen w-56 bg-gray-100 shadow-lg flex flex-col justify-between sticky top-0">
       {/* Top Section */}
       <div>
-        <h1 className="text-lg font-semibold px-3 py-2 text-center mt-3 mb-2 text-sm">FeatureENGR</h1>
+        <h1 className="text-xl font-extrabold px-3 py-2 text-center mt-3 mb-2 text-sm">FeatureENGR</h1>
         {/* Main Menu */}
         <div>
           {menuItems.map((item, index) => (
