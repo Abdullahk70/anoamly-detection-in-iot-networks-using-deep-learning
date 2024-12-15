@@ -1,31 +1,19 @@
-import css from "./index.css"
-import react from "react";
-import Sidebar from "./components/sideBar";
-import SearchBar from "./components/SearchBar";
-import DataProcessingUpdates from "./components/DataProcessingUpdates";
-import DataVisualization from "./components/DataVisualization";
-
+import { Route,Routes } from "react-router-dom";
+import HomeScreen from "./components/HomeScreen";
+import { useState } from "react";
 function App() {
+
   return (
-    <div className="flex">
-      {/* Sidebar */}
-      <Sidebar />
-
-      {/* Main Content */}
-      <div className="flex-1 px-6 py-3 bg-gray-100 min-h-screen">
-        {/* Search Bar */}
-        <SearchBar/>
-
-        {/* Content Sections */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-0 mt-6">
-          {/* Left Section: Data Processing Updates */}
-          <DataProcessingUpdates />
-
-          {/* Right Section: Data Visualization */}
-          <DataVisualization />
-        </div>
-      </div>
-    </div>
+    <Routes>
+      <Route path="/" element={<HomeScreen screen={"Home"}/>}/>
+      <Route path="/upload" element={<HomeScreen screen={"upload"}/>}/>
+      <Route path="/normalization" element={<HomeScreen screen={"normalization"}/>}/>
+      <Route path="/feature-selection" element={<HomeScreen screen={"feature-selection"}/>}/>
+      <Route path="/encoding" element={<HomeScreen screen={"encoding"}/>}/>
+      <Route path="/outlier-detection" element={<HomeScreen screen={"outlier-detection"}/>}/>
+      <Route path="/visualization" element={<HomeScreen screen={"visualization"}/>}/>
+      <Route path="/data-splitting" element={<HomeScreen screen={"data-splitting"}/>}/>
+    </Routes>
   );
 }
 
