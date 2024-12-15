@@ -13,6 +13,7 @@ function App() {
       <Route path="/outlier-detection" element={<HomeScreen screen={"outlier-detection"}/>}/>
       <Route path="/visualization" element={<HomeScreen screen={"visualization"}/>}/>
       <Route path="/data-splitting" element={<HomeScreen screen={"data-splitting"}/>}/>
+      <Route path="/export-data" element={<HomeScreen screen={"export-data"}/>}/>
     </Routes>
   );
 }

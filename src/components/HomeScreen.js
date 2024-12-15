@@ -8,6 +8,7 @@ import Encoding from './Encoding'
 import Visualization from './Visualization'
 import OutlierDetection from './OutlierDetection'
 import DataSplitting from './DataSplitting'
+import ExportData from './ExportData'
 
 const HomeScreen = (props) => {
   return (
@@ -23,6 +24,7 @@ const HomeScreen = (props) => {
     {props.screen=="outlier-detection" && <OutlierDetection/>}
     {props.screen=="visualization" && <Visualization/>}
     {props.screen=="data-splitting" && <DataSplitting/>}
+    {props.screen=="export-data" && <ExportData/>}
     </div>
   </div>
   )
