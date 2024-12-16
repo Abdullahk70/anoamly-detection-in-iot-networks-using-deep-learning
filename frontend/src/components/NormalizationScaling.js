@@ -123,7 +123,7 @@ const NormalizationScaling = () => {
                 </p>
                 <button
                   onClick={() => handleApplyNormalization("Z-Score Scaling")}
-                  className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg shadow-lg hover:shadow-xl hover:bg-blue-600 transition-all"
+                  className="mt-2 px-4 py-2 bg-purple-600 text-white rounded-lg shadow-lg hover:shadow-xl hover:bg-purple-700 transition-all"
                 >
                   Apply
                 </button>
