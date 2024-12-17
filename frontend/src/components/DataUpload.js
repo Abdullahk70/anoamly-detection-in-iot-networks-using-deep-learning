@@ -23,32 +23,31 @@ const DataUpload = () => {
     setUploadProgress(0);
     setUploadSuccess(false);
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: "array" });
-      const firstSheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[firstSheetName];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+    const formData = new FormData();
+    formData.append("file", file);
 
-      const rows = jsonData.length;
-      const columns = jsonData[0]?.length || 0;
-
-      setFileDetails({ name: file.name, size: file.size, rows, columns });
-      setDatasetPreview(jsonData.slice(0, 6)); // Preview first 5 rows
-
-      // Simulate Progress
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 20;
-        setUploadProgress(progress);
-        if (progress >= 100) {
-          clearInterval(interval);
-          setUploadSuccess(true);
+    // Send File to Backend
+    fetch("http://localhost:5000/ml/upload", {
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to upload the file");
         }
-      }, 300);
-    };
-    reader.readAsArrayBuffer(file);
+      
+        return response.json();
+      })
+      .then((data) => {
+        setUploadProgress(100);
+        setUploadSuccess(true);
+        setFileDetails(data.fileDetails);
+        setDatasetPreview(data.preview);
+      })
+      .catch((err) => {
+        setError("File upload failed. Please try again.");
+        console.error(err);
+      });
   };
 
   // Drag and Drop Handlers
@@ -152,8 +151,7 @@ const DataUpload = () => {
                 <strong>File Name:</strong> {fileDetails.name}
               </li>
               <li>
-                <strong>File Size:</strong>{" "}
-                {(fileDetails.size / 1024).toFixed(2)} KB
+                <strong>File Size:</strong> {fileDetails.size} KB
               </li>
               <li>
                 <strong>Rows:</strong> {fileDetails.rows}
