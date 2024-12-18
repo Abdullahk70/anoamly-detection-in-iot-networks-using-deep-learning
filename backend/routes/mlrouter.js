@@ -1,19 +1,12 @@
 import express from "express";
 import multer from "multer";
 import path from "path";
-import { handleFileUpload } from "../controllers/Controllers.js";
+import { handleFileUpload, retrieveLastDataset } from "../controllers/Controllers.js";
 
 const router = express.Router();
 
-// Multer configuration
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/datasets/"); // Save files to uploads/datasets/
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`); // Timestamp to ensure unique names
-  },
-});
+// Multer memory storage configuration
+const storage = multer.memoryStorage();  // Store file as a buffer in memory
 
 const upload = multer({ 
   storage, 
@@ -29,5 +22,5 @@ const upload = multer({
 
 // Define the POST route for file uploads
 router.post("/upload", upload.single("file"), handleFileUpload);
-
+router.get("/retrieve",retrieveLastDataset)
 export default router;

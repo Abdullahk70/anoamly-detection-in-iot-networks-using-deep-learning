@@ -14,6 +14,7 @@ function App() {
       <Route path="/visualization" element={<HomeScreen screen={"visualization"}/>}/>
       <Route path="/data-splitting" element={<HomeScreen screen={"data-splitting"}/>}/>
       <Route path="/export-data" element={<HomeScreen screen={"export-data"}/>}/>
+      <Route path="/csv-display" element={<HomeScreen screen={"csv"}/>}/>
     </Routes>
   );
 }

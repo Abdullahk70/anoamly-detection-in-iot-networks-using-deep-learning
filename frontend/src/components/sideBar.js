@@ -26,6 +26,7 @@ const Sidebar = () => {
     { icon: <VisibilityIcon fontSize="small" />, label: "Visualization", link: "/visualization" },
     { icon: <SyncIcon fontSize="small" />, label: "Data Splitting", link: "/data-splitting" },
     { icon: <FileDownloadIcon fontSize="small" />, label: "Export Data", link: "/export-data" },
+    { icon: <FileDownloadIcon fontSize="small" />, label: "Display Csv", link: "/csv-display" },
   ];
 
   return (

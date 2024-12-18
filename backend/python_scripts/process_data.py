@@ -1,43 +1,52 @@
 import sys
 import os
 import json
+import base64
 
-def process_file(file_path):
+def process_file(file_data, file_type):
     try:
-        # Check if the file exists
-        if not os.path.exists(file_path):
-            return {"status": "error", "message": f"File not found: {file_path}"}
+        # Save the binary data to a file
+        with open("uploaded_file", "wb") as f:
+            f.write(file_data)
         
-        # Check file format
-        if file_path.endswith(".csv"):
-            file_type = "CSV"
-        elif file_path.endswith(".xlsx") or file_path.endswith(".xls"):
-            file_type = "Excel"
+        # Process the file, assuming it's CSV or Excel
+        if file_type == "CSV":
+            file_type = "CSV Processing Logic"
+        elif file_type == "Excel":
+            file_type = "Excel Processing Logic"
         else:
             file_type = "Unsupported"
-        
-        # Generate a dummy response
+
         response = {
             "status": "success",
-            "file_path": file_path,
             "file_type": file_type,
-            "message": "File processed successfully",
+            "message": "File processed successfully"
         }
         return response
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
 if __name__ == "__main__":
-    # Check if file path is passed
+    # Ensure file type argument is passed
     if len(sys.argv) < 2:
-        print(json.dumps({"status": "error", "message": "No file path provided"}))
+        print(json.dumps({"status": "error", "message": "No file type provided"}))
         sys.exit(1)
 
-    # Get file path from arguments
-    file_path = sys.argv[1]
+    # Get file type from command line argument
+    file_type = sys.argv[1]
 
-    # Process the file
-    result = process_file(file_path)
+    # Read the base64-encoded file data from stdin
+    encoded_data = sys.stdin.read()
 
-    # Print the result as JSON
+    # Decode the base64 string into bytes
+    try:
+        file_data = base64.b64decode(encoded_data)
+    except Exception as e:
+        print(json.dumps({"status": "error", "message": f"Failed to decode base64: {str(e)}"}))
+        sys.exit(1)
+
+    # Process the file (e.g., save or parse)
+    result = process_file(file_data, file_type)
+
+    # Output the result as JSON
     print(json.dumps(result))
