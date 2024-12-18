@@ -13,7 +13,9 @@ const DataUpload = () => {
 
   // Handle File Upload and Validation
   const handleFileUpload = (file) => {
-    const fileExtension = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
+    const fileExtension = file.name
+      .slice(file.name.lastIndexOf("."))
+      .toLowerCase();
     if (!allowedFormats.includes(fileExtension)) {
       setError("Unsupported file format. Please upload a CSV or Excel file.");
       return;
@@ -35,7 +37,7 @@ const DataUpload = () => {
         if (!response.ok) {
           throw new Error("Failed to upload the file");
         }
-      
+
         return response.json();
       })
       .then((data) => {
@@ -163,15 +165,14 @@ const DataUpload = () => {
           </div>
         )}
 
-        {/* Dataset Preview */}
-        {datasetPreview.length > 0 && (
+        {datasetPreview && datasetPreview.length > 0 && (
           <div className="mt-8">
             <h3 className="font-bold text-lg mb-4">🔍 Dataset Preview</h3>
             <div className="overflow-x-auto">
               <table className="table-auto border-collapse w-full text-sm text-left text-gray-700">
                 <thead>
                   <tr className="bg-gray-200">
-                    {datasetPreview[0].map((_, idx) => (
+                    {datasetPreview[0]?.map((_, idx) => (
                       <th key={idx} className="border p-2">
                         Column {idx + 1}
                       </th>
@@ -179,12 +180,12 @@ const DataUpload = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {datasetPreview.slice(1).map((row, idx) => (
+                  {datasetPreview.slice(1)?.map((row, idx) => (
                     <tr
                       key={idx}
                       className="even:bg-gray-50 hover:bg-green-100 transition-all"
                     >
-                      {row.map((cell, idy) => (
+                      {row?.map((cell, idy) => (
                         <td key={idy} className="border p-2">
                           {cell}
                         </td>
