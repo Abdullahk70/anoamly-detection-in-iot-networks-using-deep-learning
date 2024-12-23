@@ -1,7 +1,7 @@
 import express from "express";
 import multer from "multer";
 import path from "path";
-import { handleFileUpload, retrieveLastDataset } from "../controllers/Controllers.js";
+import { handleFileUpload, labelEncoding, oneHotEncoding, retrieveLastDataset } from "../controllers/Controllers.js";
 
 const router = express.Router();
 
@@ -22,5 +22,7 @@ const upload = multer({
 
 // Define the POST route for file uploads
 router.post("/upload", upload.single("file"), handleFileUpload);
-router.get("/retrieve",retrieveLastDataset)
+router.get("/retrieve",retrieveLastDataset);
+router.post("/onehotencoding",oneHotEncoding);
+router.post("/labelencoding",labelEncoding);
 export default router;

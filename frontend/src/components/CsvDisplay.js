@@ -11,13 +11,10 @@ const CsvDisplay = () => {
   const fetchCsvData = async () => {
     try {
       // Make the request to the backend API
-      const response = await axios.get("http://localhost:5000/ml/retrieve", {
-        responseType: "arraybuffer", // Ensure binary response is handled properly
-      });
+      const response = await axios.get("http://localhost:5000/ml/retrieve");
 
-      // Convert the binary data (CSV file) to text
-      const textData = new TextDecoder().decode(new Uint8Array(response.data));
-      setCsvData(textData);
+      // Set the data if the request is successful
+      setCsvData(response.data);
       setError(null);
     } catch (err) {
       console.error("Error fetching CSV data:", err);
@@ -25,38 +22,10 @@ const CsvDisplay = () => {
     }
   };
 
-  // Function to download the CSV file
-  const downloadCsv = () => {
-    const blob = new Blob([csvData], { type: "text/csv" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "last_uploaded_data.csv";
-    link.click();
-  };
-
-  // Parse CSV data into an array of objects
-  const parseCsvData = () => {
-    if (!csvData) return [];
-
-    const lines = csvData.split("\n").filter((line) => line.trim() !== "");
-    const headers = lines[0].split(",");
-    const rows = lines.slice(1);
-
-    return rows.map((row) => {
-      const values = row.split(",");
-      const obj = {};
-      headers.forEach((header, index) => {
-        obj[header.trim()] = values[index]?.trim();
-      });
-      return obj;
-    });
-  };
-
   // Paginate the rows to display only a subset per page
   const paginateData = () => {
-    const data = parseCsvData();
     const offset = (currentPage - 1) * pageSize;
-    return data.slice(offset, offset + pageSize);
+    return csvData.slice(offset, offset + pageSize);
   };
 
   const handlePageChange = (pageNumber) => {
@@ -67,7 +36,7 @@ const CsvDisplay = () => {
     fetchCsvData();
   }, []);
 
-  const totalPages = Math.ceil(parseCsvData().length / pageSize);
+  const totalPages = Math.ceil(csvData?.length / pageSize);
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -84,7 +53,7 @@ const CsvDisplay = () => {
             <table className="min-w-full table-auto border-separate border-spacing-2">
               <thead className="bg-purple-600 rounded-lg text-white">
                 <tr>
-                  {Object.keys(parseCsvData()[0] || {}).map((key) => (
+                  {Object.keys(csvData[0] || {}).map((key) => (
                     <th
                       key={key}
                       className="px-6 py-4 text-lg rounded-lg font-semibold text-left"
@@ -138,10 +107,16 @@ const CsvDisplay = () => {
           {/* Download Button */}
           <div className="flex justify-center mt-8">
             <button
-              onClick={downloadCsv}
+              onClick={() => {
+                const blob = new Blob([JSON.stringify(csvData)], { type: "application/json" });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = "last_uploaded_data.json";
+                link.click();
+              }}
               className="px-6 py-3 bg-purple-600 text-white rounded-full text-lg font-semibold hover:bg-purple-700 transition duration-300"
             >
-              Download CSV
+              Download Data as JSON
             </button>
           </div>
         </>

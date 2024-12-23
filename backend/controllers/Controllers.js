@@ -1,9 +1,12 @@
 import path from "path";
 import { fileURLToPath } from "url";
 import { spawn } from "child_process";
+import { exec } from "child_process";
 import datasetModel from "../models/datasetModel.js"; // Assuming your dataset model is in this path
 import { parse } from "json2csv"; // You'll need the json2csv package to convert JSON to CSV
-import { Buffer } from "buffer"; 
+import { Buffer } from "buffer";
+import csvParser from "csv-parser"; // Install using `npm install csv-parser`
+import { Readable } from "stream";
 
 // Define __dirname manually
 const __filename = fileURLToPath(import.meta.url);
@@ -75,7 +78,9 @@ export const handleFileUpload = async (req, res) => {
         res.json({ success: true, data: parsedOutput });
       } catch (parseError) {
         console.error("Error parsing Python script output:", parseError);
-        res.status(500).json({ error: "Error processing Python script output" });
+        res
+          .status(500)
+          .json({ error: "Error processing Python script output" });
       }
     });
   } catch (error) {
@@ -88,28 +93,36 @@ export const handleFileUpload = async (req, res) => {
 export const retrieveLastDataset = async (req, res) => {
   try {
     // Retrieve the most recent dataset (last uploaded file)
-    const lastDataset = await datasetModel.findOne().sort({ createdAt: -1 }).limit(1);
+    const lastDataset = await datasetModel
+      .findOne()
+      .sort({ createdAt: -1 })
+      .limit(1);
 
     // If no dataset is found
     if (!lastDataset) {
       return res.status(404).json({ error: "No dataset found" });
     }
 
-    // The file buffer is already in CSV format (as per your data storage method)
     const fileBuffer = lastDataset.file;
     const fileType = lastDataset.contentType;
 
     // Ensure the content type is "text/csv"
     if (fileType === "text/csv") {
-      // Send the buffer back as a file download
-      res.setHeader("Content-Type", "text/csv");
-      res.setHeader(
-        "Content-Disposition",
-        "attachment; filename=last_uploaded_data.csv"
-      );
-      res.send(fileBuffer); // Send the buffer as the file content
+      // Convert file buffer to JSON
+      const stream = Readable.from(fileBuffer);
+      const rows = [];
+
+      stream
+        .pipe(csvParser())
+        .on("data", (data) => rows.push(data))
+        .on("end", () => {
+          res.status(200).json(rows); // Send parsed JSON data
+        })
+        .on("error", (err) => {
+          console.error("Error parsing CSV:", err);
+          res.status(500).json({ error: "Error processing dataset" });
+        });
     } else {
-      // Return an error if the file type is not CSV
       return res.status(415).json({ error: "Unsupported file format" });
     }
   } catch (error) {
@@ -117,3 +130,117 @@ export const retrieveLastDataset = async (req, res) => {
     res.status(500).json({ error: "Error retrieving dataset" });
   }
 };
+
+
+
+// One-Hot Encoding Controller
+export const oneHotEncoding = async (req, res) => {
+  try {
+    // Retrieve the last uploaded file from MongoDB
+    const lastDataset = await datasetModel.findOne().sort({ createdAt: -1 }).limit(1);
+
+    if (!lastDataset) {
+      return res.status(404).json({ error: "No dataset found" });
+    }
+
+    const fileBuffer = lastDataset.file.toString("utf-8"); // Convert buffer to string (CSV format)
+
+    // Spawn Python script for One-Hot Encoding
+    const python = spawn("python", [path.join(__dirname, "../python_scripts/one_hot_encoding.py")]);
+
+    let scriptOutput = "";
+
+    python.stdin.write(fileBuffer); // Send CSV data to the Python script
+    python.stdin.end();
+
+    // Capture Python script output
+    python.stdout.on("data", (data) => {
+      scriptOutput += data.toString();
+    });
+
+    python.stderr.on("data", (data) => {
+      console.error(`Python stderr: ${data}`);
+    });
+
+    python.on("close", (code) => {
+      if (code !== 0) {
+        return res.status(500).json({ error: "One-Hot Encoding script failed" });
+      }
+
+      try {
+        const result = JSON.parse(scriptOutput); // Parse JSON output from Python
+        const processedResult = processEncodedData(result); // Process the data to reflect encoding results properly
+        
+        
+
+        res.json(processedResult);
+      } catch (err) {
+        res.status(500).json({ error: "Error parsing Python script output" });
+      }
+    });
+  } catch (err) {
+    console.error("Error during One-Hot Encoding:", err);
+    res.status(500).json({ error: "Server error during One-Hot Encoding" });
+  }
+};
+
+
+
+// Label Encoding Controller
+export const labelEncoding = async (req, res) => {
+  try {
+    // Retrieve the last uploaded file from MongoDB
+    const lastDataset = await datasetModel.findOne().sort({ createdAt: -1 }).limit(1);
+
+    if (!lastDataset) {
+      return res.status(404).json({ error: "No dataset found" });
+    }
+
+    const fileBuffer = lastDataset.file.toString("utf-8"); // Convert buffer to string (CSV format)
+
+    // Spawn Python script for Label Encoding
+    const python = spawn("python", [path.join(__dirname, "../python_scripts/label_encoding.py")]);
+
+    let scriptOutput = "";
+
+    python.stdin.write(fileBuffer); // Send CSV data to the Python script
+    python.stdin.end();
+
+    // Capture Python script output
+    python.stdout.on("data", (data) => {
+      scriptOutput += data.toString();
+    });
+
+    python.stderr.on("data", (data) => {
+      console.error(`Python stderr: ${data}`);
+    });
+
+    python.on("close", (code) => {
+      if (code !== 0) {
+        return res.status(500).json({ error: "Label Encoding script failed" });
+      }
+
+      try {
+        const result = JSON.parse(scriptOutput); // Parse JSON output from Python
+        const processedResult = processEncodedData(result); // Process the data to reflect encoding results properly
+        res.json(processedResult );
+      } catch (err) {
+        res.status(500).json({ error: "Error parsing Python script output" });
+      }
+    });
+  } catch (err) {
+    console.error("Error during Label Encoding:", err);
+    res.status(500).json({ error: "Server error during Label Encoding" });
+  }
+};
+
+// Helper function to process the encoded data
+const processEncodedData = (data) => {
+  // Process the encoded data to display key-value pairs, including true/false, etc.
+  const processedData = Object.entries(data).map(([key, value]) => {
+    return { [key]: value };
+  });
+  return processedData;
+};
+
+
