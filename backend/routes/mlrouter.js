@@ -1,7 +1,7 @@
 import express from "express";
 import multer from "multer";
 import path from "path";
-import { featureSelection, handleFileUpload, labelEncoding, oneHotEncoding, retrieveLastDataset } from "../controllers/Controllers.js";
+import { featureSelection, handleFileUpload, labelEncoding, minMaxScaling, oneHotEncoding, retrieveLastDataset, zScoreScaling } from "../controllers/Controllers.js";
 
 const router = express.Router();
 
@@ -26,4 +26,6 @@ router.get("/retrieve",retrieveLastDataset);
 router.get("/featureselection",featureSelection);
 router.post("/onehotencoding",oneHotEncoding);
 router.post("/labelencoding",labelEncoding);
+router.post("/minmax",minMaxScaling);
+router.post("/zscaling",zScoreScaling);
 export default router;

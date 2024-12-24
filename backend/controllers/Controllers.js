@@ -296,3 +296,99 @@ export const featureSelection = async (req, res) => {
     res.status(500).json({ error: "Server error during Feature Selection" });
   }
 };
+
+
+// Min-Max Scaling Controller
+export const minMaxScaling = async (req, res) => {
+  try {
+    // Retrieve the last uploaded dataset
+    const lastDataset = await datasetModel.findOne().sort({ createdAt: -1 }).limit(1);
+
+    if (!lastDataset) {
+      return res.status(404).json({ error: "No dataset found" });
+    }
+
+    const fileBuffer = lastDataset.file.toString('utf-8'); // Convert buffer to string (CSV format)
+
+    // Spawn Python script for Min-Max Scaling
+    const python = spawn('python', [path.join(__dirname, '../python_scripts/min_max_scaling.py')]);
+
+    let scriptOutput = '';
+
+    python.stdin.write(fileBuffer); // Send CSV data to the Python script
+    python.stdin.end();
+
+    // Capture Python script output
+    python.stdout.on('data', (data) => {
+      scriptOutput += data.toString();
+    });
+
+    python.stderr.on('data', (data) => {
+      console.error(`Python stderr: ${data}`);
+    });
+
+    python.on('close', (code) => {
+      if (code !== 0) {
+        return res.status(500).json({ error: 'Min-Max Scaling script failed' });
+      }
+
+      try {
+        const result = JSON.parse(scriptOutput); // Parse JSON output from Python
+        res.json(result); // Return the transformed data
+      } catch (err) {
+        res.status(500).json({ error: 'Error parsing Python script output' });
+      }
+    });
+  } catch (err) {
+    console.error('Error during Min-Max Scaling:', err);
+    res.status(500).json({ error: 'Server error during Min-Max Scaling' });
+  }
+};
+
+
+// Z-Score Scaling Controller
+export const zScoreScaling = async (req, res) => {
+  try {
+    // Retrieve the last uploaded dataset
+    const lastDataset = await datasetModel.findOne().sort({ createdAt: -1 }).limit(1);
+
+    if (!lastDataset) {
+      return res.status(404).json({ error: "No dataset found" });
+    }
+
+    const fileBuffer = lastDataset.file.toString('utf-8'); // Convert buffer to string (CSV format)
+
+    // Spawn Python script for Z-Score Scaling
+    const python = spawn('python', [path.join(__dirname, '../python_scripts/z_score_scaling.py')]);
+
+    let scriptOutput = '';
+
+    python.stdin.write(fileBuffer); // Send CSV data to the Python script
+    python.stdin.end();
+
+    // Capture Python script output
+    python.stdout.on('data', (data) => {
+      scriptOutput += data.toString();
+    });
+
+    python.stderr.on('data', (data) => {
+      console.error(`Python stderr: ${data}`);
+    });
+
+    python.on('close', (code) => {
+      if (code !== 0) {
+        return res.status(500).json({ error: 'Z-Score Scaling script failed' });
+      }
+
+      try {
+        const result = JSON.parse(scriptOutput); // Parse JSON output from Python
+        res.json(result); // Return the transformed data
+      } catch (err) {
+        res.status(500).json({ error: 'Error parsing Python script output' });
+      }
+    });
+  } catch (err) {
+    console.error('Error during Z-Score Scaling:', err);
+    res.status(500).json({ error: 'Server error during Z-Score Scaling' });
+  }
+};
