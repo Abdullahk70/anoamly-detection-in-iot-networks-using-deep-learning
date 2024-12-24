@@ -33,7 +33,10 @@ const Sidebar = () => {
     <div className="h-screen w-56 bg-gray-200 shadow-lg flex flex-col justify-between sticky top-0">
       {/* Top Section */}
       <div>
+        <Link to="../">
         <h1 className="text-xl font-extrabold px-3 py-2 text-center mt-3 mb-2 text-sm">FeatureENGR</h1>
+        </Link>
+      
 
         {/* Main Menu */}
         <div>

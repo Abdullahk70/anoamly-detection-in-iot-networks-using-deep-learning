@@ -1,35 +1,65 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Table } from "react-bootstrap";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Checkbox, FormControlLabel } from "@mui/material";
+import axios from "axios";
 
 const FeatureSelection = () => {
   const [selectedFeatures, setSelectedFeatures] = useState([]);
-  const columns = ["Feature1", "Feature2", "Feature3", "Feature4", "Feature5"];
-  const importanceData = [
-    { feature: "Feature1", importance: 80 },
-    { feature: "Feature2", importance: 70 },
-    { feature: "Feature3", importance: 60 },
-    { feature: "Feature4", importance: 50 },
-    { feature: "Feature5", importance: 90 },
-  ];
+  const [features, setFeatures] = useState([]); // Features extracted from importanceData
+  const [importanceData, setImportanceData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/ml/featureselection");
+        const importanceData = response.data.importanceData;
+
+        // Extract all feature names from the importance data
+        const extractedFeatures = importanceData[1].importance.map(item => item.feature);
+        setFeatures(extractedFeatures); // Features list
+        setImportanceData(importanceData[1].importance); // Importance data for the graph
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleCheckboxChange = (event, feature) => {
     if (event.target.checked) {
       setSelectedFeatures([...selectedFeatures, feature]);
     } else {
-      setSelectedFeatures(selectedFeatures.filter(f => f !== feature));
+      setSelectedFeatures(selectedFeatures.filter((f) => f !== feature));
     }
   };
 
   const handleSelectAll = (event) => {
     if (event.target.checked) {
-      setSelectedFeatures(columns);
+      setSelectedFeatures(features);
     } else {
       setSelectedFeatures([]);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-2xl font-semibold text-gray-600">Loading features...</div>
+      </div>
+    );
+  }
+
+  // Prepare data for the chart, mapping feature importance values
+  const chartData = importanceData.map((item) => ({
+    feature: item.feature,
+    importance: item.importance
+  }));
 
   return (
     <div className="feature-selection-page bg-gray-50 min-h-screen py-12 px-6">
@@ -49,7 +79,7 @@ const FeatureSelection = () => {
               control={
                 <Checkbox
                   onChange={handleSelectAll}
-                  checked={selectedFeatures.length === columns.length}
+                  checked={selectedFeatures.length === features.length}
                   color="primary"
                 />
               }
@@ -63,7 +93,7 @@ const FeatureSelection = () => {
                 </tr>
               </thead>
               <tbody>
-                {columns.map((feature, index) => (
+                {features.map((feature, index) => (
                   <tr key={index} className="hover:bg-gray-50">
                     <td className="text-gray-700">{feature}</td>
                     <td className="text-center">
@@ -83,7 +113,7 @@ const FeatureSelection = () => {
           <div className="bg-white rounded-xl shadow-lg p-5 border border-gray-200">
             <h3 className="text-2xl font-semibold text-gray-800 mb-4">Feature Importance</h3>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={importanceData}>
+              <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="feature" />
                 <YAxis />
@@ -101,7 +131,9 @@ const FeatureSelection = () => {
           {selectedFeatures.length > 0 ? (
             <div className="space-y-2">
               {selectedFeatures.map((feature, index) => (
-                <div key={index} className="text-lg text-gray-700">{feature}</div>
+                <div key={index} className="text-lg text-gray-700">
+                  {feature}
+                </div>
               ))}
             </div>
           ) : (
@@ -111,7 +143,7 @@ const FeatureSelection = () => {
 
         {/* Navigation Buttons */}
         <div className="flex justify-center gap-6 mt-8">
-          <Link to="/upload" className="bg-gradient-to-r  bg-purple-600 text-white py-2 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200">
+          <Link to="/upload" className="bg-gradient-to-r bg-purple-600 text-white py-2 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200">
             Go to Data Upload
           </Link>
           <Link to="/normalization" className="bg-gradient-to-r bg-purple-600 text-white py-2 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200">

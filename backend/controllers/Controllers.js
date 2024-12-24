@@ -244,3 +244,55 @@ const processEncodedData = (data) => {
 };
 
 
+
+export const featureSelection = async (req, res) => {
+  try {
+    // Retrieve the last uploaded dataset
+    const lastDataset = await datasetModel.findOne().sort({ createdAt: -1 }).limit(1);
+    if (!lastDataset) {
+      return res.status(404).json({ error: "No dataset found" });
+    }
+
+    const fileBuffer = lastDataset.file.toString("utf-8"); // Convert buffer to string (CSV format)
+
+    // Spawn Python script for feature selection
+    const python = spawn("python", [path.join(__dirname, "../python_scripts/feature_selection.py")]);
+
+    let scriptOutput = "";
+
+    python.stdin.write(fileBuffer); // Send CSV data to the Python script
+    python.stdin.end();
+
+    // Capture Python script output
+    python.stdout.on("data", (data) => {
+      scriptOutput += data.toString();
+    });
+
+    python.stderr.on("data", (data) => {
+      console.error(`Python stderr: ${data}`);
+    });
+
+    python.on("close", (code) => {
+      if (code !== 0) {
+        return res.status(500).json({ error: "Feature Selection script failed" });
+      }
+
+      try {
+        const result = JSON.parse(scriptOutput); // Parse JSON output from Python
+        // Reformat the data for frontend compatibility
+        const features = Object.keys(result);
+        const importanceData = features.map((feature) => ({
+          feature: feature,
+          importance: result[feature],
+        }));
+
+        res.json({ features, importanceData }); // Return the result to the frontend
+      } catch (err) {
+        res.status(500).json({ error: "Error parsing Python script output" });
+      }
+    });
+  } catch (err) {
+    console.error("Error during Feature Selection:", err);
+    res.status(500).json({ error: "Server error during Feature Selection" });
+  }
+};
