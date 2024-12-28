@@ -1,59 +1,118 @@
 import React, { useState } from "react";
-import { Box, FormControl, InputLabel, Select, MenuItem, Typography, Card, CardContent, Button } from "@mui/material";
+import {
+  Box,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Typography,
+  Card,
+  CardContent,
+  Button,
+} from "@mui/material";
 import Plot from "react-plotly.js";
 
 const OutlierDetection = () => {
   const [method, setMethod] = useState("");
   const [plotData, setPlotData] = useState([]);
+  const [columns, setColumns] = useState([]);
+  const [normalData, setNormalData] = useState([]);
+  const [outliers, setOutliers] = useState([]);
   const [outlierCount, setOutlierCount] = useState(0);
   const [outlierPercentage, setOutlierPercentage] = useState(0);
+  const [loading, setLoading] = useState(false);
 
-  const normalData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  const apiEndpoints = {
+    "z-score": "http://localhost:5000/ml/zscoreOutlier",
+    iqr: "http://localhost:5000/ml/iqrOutlier",
+    "isolation-forest": "http://localhost:5000/ml/isolationOutlier",
+  };
 
-  const handleMethodChange = (event) => {
+  const handleMethodChange = async (event) => {
     const selectedMethod = event.target.value;
     setMethod(selectedMethod);
 
-    let outliers = [];
-    if (selectedMethod === "z-score") {
-      outliers = [1, 10];
-    } else if (selectedMethod === "iqr") {
-      outliers = [1, 9, 10];
-    } else if (selectedMethod === "isolation-forest") {
-      outliers = [2, 8];
+    if (!apiEndpoints[selectedMethod]) return;
+
+    setLoading(true);
+
+    try {
+      // Fetch data from API
+      const response = await fetch(apiEndpoints[selectedMethod]);
+      const result = await response.json();
+
+      // Process data based on the JSON format
+      processData(result);
+
+      // Calculate outlier metrics
+      const totalOutliers = outliers.reduce((sum, col) => sum + col.length, 0);
+      const totalData = normalData.reduce((sum, col) => sum + col.length, 0);
+      setOutlierCount(totalOutliers);
+      setOutlierPercentage(((totalOutliers / (totalData + totalOutliers)) * 100).toFixed(2));
+
+      // Update plot data
+      setPlotData(
+        columns.map((col, index) => [
+          {
+            x: Array.from({ length: normalData[index].length }, (_, i) => i + 1),
+            y: normalData[index],
+            mode: "markers",
+            marker: { color: "#4caf50", size: 10 },
+            type: "scatter",
+            name: `Normal Data (${col})`,
+          },
+          {
+            x: Array.from({ length: outliers[index].length }, (_, i) => i + 1),
+            y: outliers[index],
+            mode: "markers",
+            marker: { color: "#f44336", size: 12 },
+            type: "scatter",
+            name: `Outliers (${col})`,
+          },
+        ]).flat()
+      );
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      alert("Failed to fetch data. Please try again.");
+    } finally {
+      setLoading(false);
     }
+  };
 
-    const count = outliers.length;
-    setOutlierCount(count);
-    setOutlierPercentage(((count / normalData.length) * 100).toFixed(2));
+  const processData = (result) => {
+    const { normalData, outliers, columns: apiColumns } = result;
 
-    setPlotData([
-      {
-        x: normalData,
-        y: normalData,
-        mode: "markers",
-        marker: { color: "#4caf50", size: 10 },
-        type: "scatter",
-        name: "Normal Data",
-      },
-      {
-        x: outliers,
-        y: outliers,
-        mode: "markers",
-        marker: { color: "#f44336", size: 12 },
-        type: "scatter",
-        name: "Outliers",
-      },
-    ]);
+    if (!apiColumns) {
+      // Handle Z-Score JSON format
+      const dynamicColumns = Object.keys(result);
+      const normal = [];
+      const outlier = [];
+
+      dynamicColumns.forEach((col) => {
+        if (result[col].normalData && result[col].outliers) {
+          normal.push(result[col].normalData);
+          outlier.push(result[col].outliers);
+        }
+      });
+
+      setColumns(dynamicColumns);
+      setNormalData(normal);
+      setOutliers(outlier);
+    } else {
+      // Handle IQR and Isolation Forest JSON formats
+      setColumns(apiColumns);
+      setNormalData(normalData);
+      setOutliers(outliers);
+    }
   };
 
   const plotLayout = {
-    title: "Outlier Detection",
-    xaxis: { title: "Data Points" },
-    yaxis: { title: "Values" },
+    title: `Outlier Detection (${method})`,
+    xaxis: { title: "Index" },
+    yaxis: { title: columns.length > 1 ? "Values (Multi-dimensional)" : "Values" },
     showlegend: true,
-    height: 400, // Adjusted to slightly smaller
-    width: 500,
+    height: 400,
+    width: 600,
   };
 
   return (
@@ -81,6 +140,7 @@ const OutlierDetection = () => {
                     backgroundColor: "#ffffff",
                     "& .MuiSelect-icon": { color: "#4A90E2" },
                   }}
+                  disabled={loading}
                 >
                   <MenuItem value="z-score">Z-Score</MenuItem>
                   <MenuItem value="iqr">IQR</MenuItem>
@@ -90,27 +150,8 @@ const OutlierDetection = () => {
             </CardContent>
           </Card>
 
-          {/* Apply Changes Button */}
-          {method && (
-            <Button
-              variant="contained"
-              fullWidth
-              sx={{
-                padding: "10px 20px",
-                fontSize: "16px",
-                fontWeight: "bold",
-                borderRadius: "8px",
-                backgroundColor: "purple",
-                "&:hover": { backgroundColor: "purple", opacity: 0.9 },
-                marginBottom: 3,
-              }}
-            >
-              Apply Changes
-            </Button>
-          )}
-
           {/* Summary */}
-          {method && (
+          {method && !loading && (
             <Card sx={{ boxShadow: 3 }}>
               <CardContent>
                 <Typography variant="h6" sx={{ marginBottom: 2, fontWeight: "bold", textAlign: "center" }}>
@@ -129,7 +170,13 @@ const OutlierDetection = () => {
 
         {/* Graph on the Right */}
         <Box sx={{ flex: "1 1 50%", display: "flex", justifyContent: "center", alignItems: "center" }}>
-          <Plot data={plotData} layout={plotLayout} />
+          {plotData.length > 0 ? (
+            <Plot data={plotData} layout={plotLayout} />
+          ) : (
+            <Typography variant="h6" color="textSecondary">
+              No data to display. Select a method to proceed.
+            </Typography>
+          )}
         </Box>
       </Box>
     </div>

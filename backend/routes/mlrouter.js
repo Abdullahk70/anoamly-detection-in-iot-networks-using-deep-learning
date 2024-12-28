@@ -1,7 +1,7 @@
 import express from "express";
 import multer from "multer";
 import path from "path";
-import { featureSelection, handleFileUpload, labelEncoding, minMaxScaling, oneHotEncoding, retrieveLastDataset, zScoreScaling } from "../controllers/Controllers.js";
+import { featureSelection, getLastDataset, getVisualizationData, handleFileUpload, iqrOutlierDetection, isolationForestOutlierDetection, labelEncoding, minMaxScaling, oneHotEncoding, retrieveLastDataset, zScoreOutlierDetection, zScoreScaling } from "../controllers/Controllers.js";
 
 const router = express.Router();
 
@@ -23,7 +23,12 @@ const upload = multer({
 // Define the POST route for file uploads
 router.post("/upload", upload.single("file"), handleFileUpload);
 router.get("/retrieve",retrieveLastDataset);
+router.get("/visualization",getVisualizationData);
 router.get("/featureselection",featureSelection);
+router.get("/zscoreOutlier",zScoreOutlierDetection);
+router.get("/iqrOutlier",iqrOutlierDetection);
+router.get("/isolationOutlier",isolationForestOutlierDetection);
+router.get("/export",getLastDataset);
 router.post("/onehotencoding",oneHotEncoding);
 router.post("/labelencoding",labelEncoding);
 router.post("/minmax",minMaxScaling);

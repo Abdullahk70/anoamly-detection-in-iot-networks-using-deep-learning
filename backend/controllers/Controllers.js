@@ -131,13 +131,14 @@ export const retrieveLastDataset = async (req, res) => {
   }
 };
 
-
-
 // One-Hot Encoding Controller
 export const oneHotEncoding = async (req, res) => {
   try {
     // Retrieve the last uploaded file from MongoDB
-    const lastDataset = await datasetModel.findOne().sort({ createdAt: -1 }).limit(1);
+    const lastDataset = await datasetModel
+      .findOne()
+      .sort({ createdAt: -1 })
+      .limit(1);
 
     if (!lastDataset) {
       return res.status(404).json({ error: "No dataset found" });
@@ -146,7 +147,9 @@ export const oneHotEncoding = async (req, res) => {
     const fileBuffer = lastDataset.file.toString("utf-8"); // Convert buffer to string (CSV format)
 
     // Spawn Python script for One-Hot Encoding
-    const python = spawn("python", [path.join(__dirname, "../python_scripts/one_hot_encoding.py")]);
+    const python = spawn("python", [
+      path.join(__dirname, "../python_scripts/one_hot_encoding.py"),
+    ]);
 
     let scriptOutput = "";
 
@@ -164,14 +167,14 @@ export const oneHotEncoding = async (req, res) => {
 
     python.on("close", (code) => {
       if (code !== 0) {
-        return res.status(500).json({ error: "One-Hot Encoding script failed" });
+        return res
+          .status(500)
+          .json({ error: "One-Hot Encoding script failed" });
       }
 
       try {
         const result = JSON.parse(scriptOutput); // Parse JSON output from Python
         const processedResult = processEncodedData(result); // Process the data to reflect encoding results properly
-        
-        
 
         res.json(processedResult);
       } catch (err) {
@@ -184,13 +187,14 @@ export const oneHotEncoding = async (req, res) => {
   }
 };
 
-
-
 // Label Encoding Controller
 export const labelEncoding = async (req, res) => {
   try {
     // Retrieve the last uploaded file from MongoDB
-    const lastDataset = await datasetModel.findOne().sort({ createdAt: -1 }).limit(1);
+    const lastDataset = await datasetModel
+      .findOne()
+      .sort({ createdAt: -1 })
+      .limit(1);
 
     if (!lastDataset) {
       return res.status(404).json({ error: "No dataset found" });
@@ -199,7 +203,9 @@ export const labelEncoding = async (req, res) => {
     const fileBuffer = lastDataset.file.toString("utf-8"); // Convert buffer to string (CSV format)
 
     // Spawn Python script for Label Encoding
-    const python = spawn("python", [path.join(__dirname, "../python_scripts/label_encoding.py")]);
+    const python = spawn("python", [
+      path.join(__dirname, "../python_scripts/label_encoding.py"),
+    ]);
 
     let scriptOutput = "";
 
@@ -223,7 +229,7 @@ export const labelEncoding = async (req, res) => {
       try {
         const result = JSON.parse(scriptOutput); // Parse JSON output from Python
         const processedResult = processEncodedData(result); // Process the data to reflect encoding results properly
-        res.json(processedResult );
+        res.json(processedResult);
       } catch (err) {
         res.status(500).json({ error: "Error parsing Python script output" });
       }
@@ -243,12 +249,13 @@ const processEncodedData = (data) => {
   return processedData;
 };
 
-
-
 export const featureSelection = async (req, res) => {
   try {
     // Retrieve the last uploaded dataset
-    const lastDataset = await datasetModel.findOne().sort({ createdAt: -1 }).limit(1);
+    const lastDataset = await datasetModel
+      .findOne()
+      .sort({ createdAt: -1 })
+      .limit(1);
     if (!lastDataset) {
       return res.status(404).json({ error: "No dataset found" });
     }
@@ -256,7 +263,9 @@ export const featureSelection = async (req, res) => {
     const fileBuffer = lastDataset.file.toString("utf-8"); // Convert buffer to string (CSV format)
 
     // Spawn Python script for feature selection
-    const python = spawn("python", [path.join(__dirname, "../python_scripts/feature_selection.py")]);
+    const python = spawn("python", [
+      path.join(__dirname, "../python_scripts/feature_selection.py"),
+    ]);
 
     let scriptOutput = "";
 
@@ -274,7 +283,9 @@ export const featureSelection = async (req, res) => {
 
     python.on("close", (code) => {
       if (code !== 0) {
-        return res.status(500).json({ error: "Feature Selection script failed" });
+        return res
+          .status(500)
+          .json({ error: "Feature Selection script failed" });
       }
 
       try {
@@ -297,98 +308,374 @@ export const featureSelection = async (req, res) => {
   }
 };
 
-
 // Min-Max Scaling Controller
 export const minMaxScaling = async (req, res) => {
   try {
     // Retrieve the last uploaded dataset
-    const lastDataset = await datasetModel.findOne().sort({ createdAt: -1 }).limit(1);
+    const lastDataset = await datasetModel
+      .findOne()
+      .sort({ createdAt: -1 })
+      .limit(1);
 
     if (!lastDataset) {
       return res.status(404).json({ error: "No dataset found" });
     }
 
-    const fileBuffer = lastDataset.file.toString('utf-8'); // Convert buffer to string (CSV format)
+    const fileBuffer = lastDataset.file.toString("utf-8"); // Convert buffer to string (CSV format)
 
     // Spawn Python script for Min-Max Scaling
-    const python = spawn('python', [path.join(__dirname, '../python_scripts/min_max_scaling.py')]);
+    const python = spawn("python", [
+      path.join(__dirname, "../python_scripts/min_max_scaling.py"),
+    ]);
 
-    let scriptOutput = '';
+    let scriptOutput = "";
 
     python.stdin.write(fileBuffer); // Send CSV data to the Python script
     python.stdin.end();
 
     // Capture Python script output
-    python.stdout.on('data', (data) => {
+    python.stdout.on("data", (data) => {
       scriptOutput += data.toString();
     });
 
-    python.stderr.on('data', (data) => {
+    python.stderr.on("data", (data) => {
       console.error(`Python stderr: ${data}`);
     });
 
-    python.on('close', (code) => {
+    python.on("close", (code) => {
       if (code !== 0) {
-        return res.status(500).json({ error: 'Min-Max Scaling script failed' });
+        return res.status(500).json({ error: "Min-Max Scaling script failed" });
       }
 
       try {
         const result = JSON.parse(scriptOutput); // Parse JSON output from Python
         res.json(result); // Return the transformed data
       } catch (err) {
-        res.status(500).json({ error: 'Error parsing Python script output' });
+        res.status(500).json({ error: "Error parsing Python script output" });
       }
     });
   } catch (err) {
-    console.error('Error during Min-Max Scaling:', err);
-    res.status(500).json({ error: 'Server error during Min-Max Scaling' });
+    console.error("Error during Min-Max Scaling:", err);
+    res.status(500).json({ error: "Server error during Min-Max Scaling" });
   }
 };
-
 
 // Z-Score Scaling Controller
 export const zScoreScaling = async (req, res) => {
   try {
     // Retrieve the last uploaded dataset
-    const lastDataset = await datasetModel.findOne().sort({ createdAt: -1 }).limit(1);
+    const lastDataset = await datasetModel
+      .findOne()
+      .sort({ createdAt: -1 })
+      .limit(1);
 
     if (!lastDataset) {
       return res.status(404).json({ error: "No dataset found" });
     }
 
-    const fileBuffer = lastDataset.file.toString('utf-8'); // Convert buffer to string (CSV format)
+    const fileBuffer = lastDataset.file.toString("utf-8"); // Convert buffer to string (CSV format)
 
     // Spawn Python script for Z-Score Scaling
-    const python = spawn('python', [path.join(__dirname, '../python_scripts/z_score_scaling.py')]);
+    const python = spawn("python", [
+      path.join(__dirname, "../python_scripts/z_score_scaling.py"),
+    ]);
 
-    let scriptOutput = '';
+    let scriptOutput = "";
 
     python.stdin.write(fileBuffer); // Send CSV data to the Python script
     python.stdin.end();
 
     // Capture Python script output
-    python.stdout.on('data', (data) => {
+    python.stdout.on("data", (data) => {
       scriptOutput += data.toString();
     });
 
-    python.stderr.on('data', (data) => {
+    python.stderr.on("data", (data) => {
       console.error(`Python stderr: ${data}`);
     });
 
-    python.on('close', (code) => {
+    python.on("close", (code) => {
       if (code !== 0) {
-        return res.status(500).json({ error: 'Z-Score Scaling script failed' });
+        return res.status(500).json({ error: "Z-Score Scaling script failed" });
       }
 
       try {
         const result = JSON.parse(scriptOutput); // Parse JSON output from Python
         res.json(result); // Return the transformed data
       } catch (err) {
-        res.status(500).json({ error: 'Error parsing Python script output' });
+        res.status(500).json({ error: "Error parsing Python script output" });
       }
     });
   } catch (err) {
-    console.error('Error during Z-Score Scaling:', err);
-    res.status(500).json({ error: 'Server error during Z-Score Scaling' });
+    console.error("Error during Z-Score Scaling:", err);
+    res.status(500).json({ error: "Server error during Z-Score Scaling" });
+  }
+};
+
+export const iqrOutlierDetection = async (req, res) => {
+  try {
+    const lastDataset = await datasetModel
+      .findOne()
+      .sort({ createdAt: -1 })
+      .limit(1);
+
+    if (!lastDataset) {
+      return res.status(404).json({ error: "No dataset found" });
+    }
+
+    const fileBuffer = lastDataset.file.toString("utf-8");
+
+    const python = spawn("python", [
+      path.join(__dirname, "../python_scripts/iqr_outlier_detection.py"),
+    ]);
+
+    let scriptOutput = "";
+
+    python.stdin.write(fileBuffer);
+    python.stdin.end();
+
+    python.stdout.on("data", (data) => {
+      scriptOutput += data.toString();
+    });
+
+    python.stderr.on("data", (data) => {
+      console.error(`Python stderr: ${data}`);
+    });
+
+    python.on("close", (code) => {
+      if (code !== 0) {
+        return res
+          .status(500)
+          .json({ error: "IQR Outlier Detection script failed" });
+      }
+
+      try {
+        const result = JSON.parse(scriptOutput);
+        res.json(result);
+      } catch (err) {
+        res
+          .status(500)
+          .json({ error: `Error parsing Python script output ${err}` });
+      }
+    });
+  } catch (err) {
+    console.error("Error during IQR Outlier Detection:", err);
+    res
+      .status(500)
+      .json({ error: `Server error during IQR Outlier Detection ${err}` });
+  }
+};
+
+export const isolationForestOutlierDetection = async (req, res) => {
+  try {
+    const lastDataset = await datasetModel
+      .findOne()
+      .sort({ createdAt: -1 })
+      .limit(1);
+
+    if (!lastDataset) {
+      return res.status(404).json({ error: "No dataset found" });
+    }
+
+    const fileBuffer = lastDataset.file.toString("utf-8");
+
+    const python = spawn("python", [
+      path.join(
+        __dirname,
+        "../python_scripts/isolation_forest_outlier_detection.py"
+      ),
+    ]);
+
+    let scriptOutput = "";
+
+    python.stdin.write(fileBuffer);
+    python.stdin.end();
+
+    python.stdout.on("data", (data) => {
+      scriptOutput += data.toString();
+    });
+
+    python.stderr.on("data", (data) => {
+      console.error(`Python stderr: ${data}`);
+    });
+
+    python.on("close", (code) => {
+      if (code !== 0) {
+        return res
+          .status(500)
+          .json({ error: "Isolation Forest script failed" });
+      }
+
+      try {
+        const result = JSON.parse(scriptOutput);
+        res.json(result);
+      } catch (err) {
+        res.status(500).json({ error: "Error parsing Python script output" });
+      }
+    });
+  } catch (err) {
+    console.error("Error during Isolation Forest Outlier Detection:", err);
+    res
+      .status(500)
+      .json({
+        error: "Server error during Isolation Forest Outlier Detection",
+      });
+  }
+};
+
+export const zScoreOutlierDetection = async (req, res) => {
+  try {
+    const lastDataset = await datasetModel
+      .findOne()
+      .sort({ createdAt: -1 })
+      .limit(1);
+
+    if (!lastDataset) {
+      return res.status(404).json({ error: "No dataset found" });
+    }
+
+    const fileBuffer = lastDataset.file.toString("utf-8");
+
+    const python = spawn("python", [
+      path.join(__dirname, "../python_scripts/z_score_outlier_detection.py"),
+    ]);
+
+    let scriptOutput = "";
+
+    python.stdin.write(fileBuffer);
+    python.stdin.end();
+
+    python.stdout.on("data", (data) => {
+      scriptOutput += data.toString();
+    });
+
+    python.stderr.on("data", (data) => {
+      console.error(`Python stderr: ${data}`);
+    });
+
+    python.on("close", (code) => {
+      if (code !== 0) {
+        return res.status(500).json({ error: "Z-Score script failed" });
+      }
+
+      try {
+        const result = JSON.parse(scriptOutput);
+        res.json(result);
+      } catch (err) {
+        res.status(500).json({ error: "Error parsing Python script output" });
+      }
+    });
+  } catch (err) {
+    console.error("Error during Z-Score Outlier Detection:", err);
+    res
+      .status(500)
+      .json({ error: "Server error during Z-Score Outlier Detection" });
+  }
+};
+
+export const getVisualizationData = async (req, res) => {
+  try {
+    // Retrieve the last uploaded dataset
+    const lastDataset = await datasetModel.findOne().sort({ createdAt: -1 });
+
+    if (!lastDataset) {
+      return res.status(404).json({ error: "No dataset found" });
+    }
+
+    const fileBuffer = lastDataset.file.toString("utf-8"); // Convert buffer to CSV string
+
+    // Spawn the Python script for processing
+    const python = spawn("python", [
+      path.join(__dirname, "../python_scripts/visualization_data.py"),
+    ]);
+
+    let scriptOutput = "";
+
+    python.stdin.write(fileBuffer); // Send CSV data to Python script
+    python.stdin.end();
+
+    // Capture script output
+    python.stdout.on("data", (data) => {
+      scriptOutput += data.toString();
+    });
+
+    python.stderr.on("data", (data) => {
+      console.error(`Python stderr: ${data}`);
+    });
+
+    python.on("close", (code) => {
+      if (code !== 0) {
+        return res.status(500).json({ error: "Visualization script failed" });
+      }
+
+      try {
+        const result = JSON.parse(scriptOutput); // Parse the JSON output
+        res.json(result); // Send processed data to the frontend
+      } catch (err) {
+        res.status(500).json({ error: "Error parsing Python script output" });
+      }
+    });
+  } catch (err) {
+    console.error("Error during dataset processing:", err);
+    res.status(500).json({ error: "Server error during dataset processing" });
+  }
+};
+
+
+
+export const getLastDataset = async (req, res) => {
+  try {
+    // Fetch the latest dataset
+    const lastDataset = await datasetModel
+      .findOne()
+      .sort({ createdAt: -1 })
+      .limit(1);
+
+    if (!lastDataset) {
+      return res.status(404).json({ error: "No dataset found" });
+    }
+
+    const fileBuffer = lastDataset.file.toString("utf-8");
+
+    // Check if fileBuffer is not empty
+    if (!fileBuffer) {
+      return res.status(400).json({ error: "Dataset file is empty" });
+    }
+
+    // Split the file into rows (assuming CSV format)
+    const rows = fileBuffer.split("\n").filter(row => row.trim() !== ''); // Filter out empty rows
+    const headers = rows[0].split(",").map(header => header.trim()); // Get headers and trim them
+
+    // Validate if headers are valid
+    if (headers.length === 0) {
+      return res.status(400).json({ error: "Invalid dataset headers" });
+    }
+
+    // Process the rows into data objects, skipping any rows with missing columns
+    const dataset = rows.slice(1).map((row) => {
+      const columns = row.split(",");
+      
+      // Make sure the row has enough columns to match the headers
+      if (columns.length !== headers.length) {
+        console.warn(`Skipping row due to mismatched column count: ${row}`);
+        return null;
+      }
+
+      let item = {};
+      headers.forEach((header, index) => {
+        // Only assign if the column exists and isn't undefined
+        item[header] = columns[index] ? columns[index].trim() : '';
+      });
+      
+      return item;
+    }).filter(item => item !== null); // Remove null items (mismatched rows)
+
+    res.json({
+      headers,
+      dataset, // Return the valid dataset
+    });
+  } catch (err) {
+    console.error("Error fetching last dataset:", err);
+    res.status(500).json({ error: "Server error while fetching last dataset" });
   }
 };

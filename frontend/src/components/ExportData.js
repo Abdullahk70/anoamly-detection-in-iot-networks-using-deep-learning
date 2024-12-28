@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CSVLink } from 'react-csv';
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
@@ -6,34 +6,49 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const ExportData = () => {
-  // Mock IoT anomaly detection-related data in useState
-  const [data] = useState([
-    { name: "John", age: 25, temperature: 22.5, humidity: 45, deviceStatus: "Normal" },
-    { name: "Jane", age: 28, temperature: 24.1, humidity: 50, deviceStatus: "Normal" },
-    { name: "Mike", age: 32, temperature: 30.2, humidity: 40, deviceStatus: "Warning" },
-    { name: "Sara", age: 24, temperature: 18.9, humidity: 60, deviceStatus: "Normal" }
-  ]);
+  const [data, setData] = useState([]);
+  const [headers, setHeaders] = useState([]);
+  const [includeColumns, setIncludeColumns] = useState({});
+  
+  // Fetch the dataset from API on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/ml/export');
+        const result = await response.json();
+        
+        if (response.ok) {
+          setHeaders(result.headers);
+          setData(result.dataset);
 
-  const [includeTemperature, setIncludeTemperature] = useState(true);
-  const [includeHumidity, setIncludeHumidity] = useState(true);
-  const [includeDeviceStatus, setIncludeDeviceStatus] = useState(true);
+          // Initialize includeColumns state to include all columns by default
+          const initialColumns = result.headers.reduce((acc, header) => {
+            acc[header] = true;
+            return acc;
+          }, {});
+          setIncludeColumns(initialColumns);
+        } else {
+          toast.error('Failed to fetch dataset');
+        }
+      } catch (error) {
+        console.error('Error fetching dataset:', error);
+        toast.error('Error fetching dataset');
+      }
+    };
 
-  // Filtered data
+    fetchData();
+  }, []);
+
+  // Filter the data based on selected columns
   const filteredData = data.map((item) => {
-    let filteredItem = { name: item.name, age: item.age };
-    if (includeTemperature) filteredItem.temperature = item.temperature;
-    if (includeHumidity) filteredItem.humidity = item.humidity;
-    if (includeDeviceStatus) filteredItem.deviceStatus = item.deviceStatus;
+    let filteredItem = {};
+    headers.forEach(header => {
+      if (includeColumns[header]) {
+        filteredItem[header] = item[header];
+      }
+    });
     return filteredItem;
   });
-
-  const headers = [
-    { label: "Name", key: "name" },
-    { label: "Age", key: "age" },
-    ...(includeTemperature ? [{ label: "Temperature", key: "temperature" }] : []),
-    ...(includeHumidity ? [{ label: "Humidity", key: "humidity" }] : []),
-    ...(includeDeviceStatus ? [{ label: "Device Status", key: "deviceStatus" }] : [])
-  ];
 
   // Export Functions
   const exportJSON = () => {
@@ -62,46 +77,27 @@ const ExportData = () => {
           Choose the features you want to include and export your data in your preferred format.
         </p>
 
-        {/* Feature Selection */}
+        {/* Feature Selection (dynamic columns) */}
         <div className="space-y-4 mb-8">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="includeTemperature"
-              checked={includeTemperature}
-              onChange={() => setIncludeTemperature(!includeTemperature)}
-              className="mr-3 w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-300"
-            />
-            <label htmlFor="includeTemperature" className="text-lg text-gray-800">
-              Include Temperature
-            </label>
-          </div>
-
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="includeHumidity"
-              checked={includeHumidity}
-              onChange={() => setIncludeHumidity(!includeHumidity)}
-              className="mr-3 w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-300"
-            />
-            <label htmlFor="includeHumidity" className="text-lg text-gray-800">
-              Include Humidity
-            </label>
-          </div>
-
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="includeDeviceStatus"
-              checked={includeDeviceStatus}
-              onChange={() => setIncludeDeviceStatus(!includeDeviceStatus)}
-              className="mr-3 w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-300"
-            />
-            <label htmlFor="includeDeviceStatus" className="text-lg text-gray-800">
-              Include Device Status
-            </label>
-          </div>
+          {headers.map((header) => (
+            <div key={header} className="flex items-center">
+              <input
+                type="checkbox"
+                id={`include_${header}`}
+                checked={includeColumns[header]}
+                onChange={() =>
+                  setIncludeColumns((prev) => ({
+                    ...prev,
+                    [header]: !prev[header],
+                  }))
+                }
+                className="mr-3 w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-300"
+              />
+              <label htmlFor={`include_${header}`} className="text-lg text-gray-800">
+                Include {header}
+              </label>
+            </div>
+          ))}
         </div>
 
         {/* Export Buttons */}
@@ -109,7 +105,7 @@ const ExportData = () => {
           {/* CSV Export */}
           <CSVLink
             data={filteredData}
-            headers={headers}
+            headers={headers.map((header) => ({ label: header, key: header }))}
             filename="exported_data.csv"
             className="text-center bg-green-500 text-white py-2 px-4 rounded-lg text-lg font-medium hover:bg-green-600 transition duration-300 ease-in-out"
             target="_blank"
@@ -142,4 +138,3 @@ const ExportData = () => {
 };
 
 export default ExportData;
-
