@@ -1,7 +1,7 @@
 import express from "express";
 import multer from "multer";
 import path from "path";
-import { featureSelection, getLastDataset, getVisualizationData, handleFileUpload, iqrOutlierDetection, isolationForestOutlierDetection, labelEncoding, minMaxScaling, oneHotEncoding, retrieveLastDataset, zScoreOutlierDetection, zScoreScaling } from "../controllers/Controllers.js";
+import { featureSelection, getLastDataset, getVisualizationData, handleFileUpload, iqrOutlierDetection, isolationForestOutlierDetection, labelEncoding, minMaxScaling, oneHotEncoding, retrieveLastDataset, splitDataset, zScoreOutlierDetection, zScoreScaling } from "../controllers/Controllers.js";
 
 const router = express.Router();
 
@@ -29,6 +29,7 @@ router.get("/zscoreOutlier",zScoreOutlierDetection);
 router.get("/iqrOutlier",iqrOutlierDetection);
 router.get("/isolationOutlier",isolationForestOutlierDetection);
 router.get("/export",getLastDataset);
+router.post("/split",splitDataset);
 router.post("/onehotencoding",oneHotEncoding);
 router.post("/labelencoding",labelEncoding);
 router.post("/minmax",minMaxScaling);

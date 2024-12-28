@@ -7,7 +7,7 @@ import { FaRegFileAlt, FaRegCheckCircle } from "react-icons/fa";
 
 const Encoding = () => {
   const [data, setData] = useState([]);
-  const [encodedData, setEncodedData] = useState([]); // Default to an empty array
+  const [encodedData, setEncodedData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -16,8 +16,8 @@ const Encoding = () => {
       try {
         setLoading(true);
         const response = await axios.get("http://localhost:5000/ml/retrieve");
-        console.log("Fetched Data:", response.data);  // Check if the data is fetched correctly
-        setData(response.data); // Set the fetched dataset
+        console.log("Fetched Data:", response.data);
+        setData(response.data);
       } catch (err) {
         console.error(err);
         setError("Failed to fetch the dataset. Please try again.");
@@ -29,7 +29,6 @@ const Encoding = () => {
     fetchDataset();
   }, []);
 
-  // Handle Encoding Method Selection
   const handleMethodSelect = async (method) => {
     setLoading(true);
     setError(null);
@@ -43,13 +42,12 @@ const Encoding = () => {
 
     try {
       const response = await axios.post(endpoint, { data });
-      console.log(`${method} Encoded Data:`, response.data);  // Check the response
+      console.log(`${method} Encoded Data:`, response.data);
       if (Array.isArray(response.data)) {
-        // Flatten the response data before setting it
         const flattenedData = response.data.map((item) => Object.values(item)[0]);
-        setEncodedData(flattenedData); // Store the flattened data
+        setEncodedData(flattenedData);
       } else {
-        setEncodedData([]); // If the response isn't an array, reset the encoded data
+        setEncodedData([]);
       }
     } catch (err) {
       console.error(err);
@@ -79,7 +77,9 @@ const Encoding = () => {
             <div className="text-center">
               <FaRegFileAlt className="text-4xl text-blue-500 mb-3" />
               <h3 className="text-xl font-semibold text-gray-800">One-Hot Encoding</h3>
-              <p className="text-sm text-gray-600">Transform categorical features into a binary vector.</p>
+              <p className="text-sm text-gray-600">
+                Transform categorical features into a binary vector.
+              </p>
             </div>
           </Card>
           <Card
@@ -89,7 +89,9 @@ const Encoding = () => {
             <div className="text-center">
               <FaRegCheckCircle className="text-4xl text-green-500 mb-3" />
               <h3 className="text-xl font-semibold text-gray-800">Label Encoding</h3>
-              <p className="text-sm text-gray-600">Convert categorical values into integer labels.</p>
+              <p className="text-sm text-gray-600">
+                Convert categorical values into integer labels.
+              </p>
             </div>
           </Card>
         </div>
@@ -102,16 +104,23 @@ const Encoding = () => {
           ) : error ? (
             <p className="text-red-600">{error}</p>
           ) : encodedData.length === 0 ? (
-            <p className="text-gray-600">No encoded data available. Please select an encoding method.</p>
+            <p className="text-gray-600">
+              No encoded data available. Please select an encoding method.
+            </p>
           ) : (
-            <Table responsive hover className="text-sm table-fixed w-full transition-all duration-200">
+            <Table
+              responsive
+              hover
+              className="text-sm table-auto w-full whitespace-nowrap transition-all duration-200"
+            >
               <thead className="bg-gray-100">
                 <tr>
-                  {encodedData[0] && Object.keys(encodedData[0]).map((key, index) => (
-                    <th key={index} className="px-4 py-2 text-left text-gray-600">
-                      {key}
-                    </th>
-                  ))}
+                  {encodedData[0] &&
+                    Object.keys(encodedData[0]).map((key, index) => (
+                      <th key={index} className="px-4 py-2 text-left text-gray-600">
+                        {key}
+                      </th>
+                    ))}
                 </tr>
               </thead>
               <tbody>
@@ -139,7 +148,11 @@ const Encoding = () => {
           ) : data.length === 0 ? (
             <p className="text-gray-600">No data available.</p>
           ) : (
-            <Table responsive hover className="text-sm table-fixed w-full transition-all duration-200">
+            <Table
+              responsive
+              hover
+              className="text-sm table-auto w-full whitespace-nowrap transition-all duration-200"
+            >
               <thead className="bg-gray-100">
                 <tr>
                   {Object.keys(data[0]).map((key, index) => (

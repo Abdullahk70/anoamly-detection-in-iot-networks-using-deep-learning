@@ -679,3 +679,74 @@ export const getLastDataset = async (req, res) => {
     res.status(500).json({ error: "Server error while fetching last dataset" });
   }
 };
+
+
+export const splitDataset = async (req, res) => {
+  try {
+    // Retrieve the last uploaded dataset from MongoDB
+    const lastDataset = await datasetModel
+      .findOne()
+      .sort({ createdAt: -1 })
+      .limit(1);
+
+    if (!lastDataset) {
+      return res.status(404).json({ error: "No dataset found" });
+    }
+
+    const fileBuffer = lastDataset.file; // Get the file buffer directly from the database
+    const { trainRatio, testRatio, valRatio, fileType } = req.body; // Retrieve ratios and file type from the frontend request
+
+    // Convert ratios from percentage (0-100) to decimal (0-1)
+    const trainRatioDecimal = trainRatio / 100;
+    const testRatioDecimal = testRatio / 100;
+    const valRatioDecimal = valRatio / 100;
+
+    // Validate that the ratios sum to 1
+    if (trainRatioDecimal + testRatioDecimal + valRatioDecimal !== 1) {
+      return res.status(400).json({
+        error: "Ratios must sum to 1 (e.g., trainRatio + testRatio + valRatio = 1).",
+      });
+    }
+
+    // Spawn Python script for dataset splitting
+    const python = spawn("python", [
+      path.join(__dirname, "../python_scripts/split_dataset.py"),
+      fileType, // Pass file type (e.g., CSV or Excel) to Python
+    ]);
+
+    let scriptOutput = "";
+
+    // Send the file data (binary) and ratios to Python script
+    python.stdin.write(fileBuffer); // Send file as binary data
+    python.stdin.write(JSON.stringify({ trainRatio: trainRatioDecimal, testRatio: testRatioDecimal, valRatio: valRatioDecimal }));
+    python.stdin.end();
+
+    // Capture Python script output
+    python.stdout.on("data", (data) => {
+      scriptOutput += data.toString();
+    });
+
+    python.stderr.on("data", (data) => {
+      console.error(`Python stderr: ${data.toString()}`);
+    });
+
+    python.on("close", (code) => {
+      if (code !== 0) {
+        console.error(`Python script exited with code: ${code}`);
+        return res.status(500).json({ error: "Dataset splitting script failed" });
+      }
+
+      try {
+        const result = JSON.parse(scriptOutput); // Parse JSON output from Python
+        res.json(result); // Send JSON response to the frontend
+      } catch (err) {
+        console.error("Error parsing Python script output:", err);
+        return res.status(500).json({ error: "Error parsing Python script output" });
+      }
+    });
+  } catch (err) {
+    console.error("Error during dataset splitting:", err);
+    res.status(500).json({ error: "Server error during dataset splitting" });
+  }
+};
+
