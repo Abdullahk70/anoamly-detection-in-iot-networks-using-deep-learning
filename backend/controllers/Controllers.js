@@ -5,7 +5,8 @@ import { exec } from "child_process";
 import datasetModel from "../models/datasetModel.js"; // Assuming your dataset model is in this path
 import { parse } from "json2csv"; // You'll need the json2csv package to convert JSON to CSV
 import { Buffer } from "buffer";
-import csvParser from "csv-parser"; // Install using `npm install csv-parser`
+import csv from "csv-parser"; 
+import csvParser from "csv-parser";// Install using `npm install csv-parser`
 import { Readable } from "stream";
 
 // Define __dirname manually
@@ -750,3 +751,53 @@ export const splitDataset = async (req, res) => {
   }
 };
 
+
+
+export const exporter = async (req, res) => {
+  try {
+    // Retrieve the most recent dataset (last uploaded file)
+    const lastDataset = await datasetModel
+      .findOne()
+      .sort({ createdAt: -1 })
+      .limit(1);
+
+    // If no dataset is found
+    if (!lastDataset) {
+      return res.status(404).json({ error: "No dataset found" });
+    }
+
+    const fileBuffer = lastDataset.file;
+    const fileType = lastDataset.contentType;
+
+    // Ensure the content type is "text/csv"
+    if (fileType === "text/csv") {
+      // Convert file buffer to JSON
+      const stream = Readable.from(fileBuffer);
+      const rows = [];
+      let headers = [];
+
+      stream
+        .pipe(csv())
+        .on("data", (data) => {
+          // On first row, extract headers
+          if (headers.length === 0) {
+            headers = Object.keys(data);
+          }
+          rows.push(data);
+        })
+        .on("end", () => {
+          // Return data in the expected format
+          res.status(200).json({ headers, dataset: rows });
+        })
+        .on("error", (err) => {
+          console.error("Error parsing CSV:", err);
+          res.status(500).json({ error: "Error processing dataset" });
+        });
+    } else {
+      return res.status(415).json({ error: "Unsupported file format" });
+    }
+  } catch (error) {
+    console.error("Error retrieving dataset:", error);
+    res.status(500).json({ error: "Error retrieving dataset" });
+  }
+};

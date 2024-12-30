@@ -9,17 +9,17 @@ const ExportData = () => {
   const [data, setData] = useState([]);
   const [headers, setHeaders] = useState([]);
   const [includeColumns, setIncludeColumns] = useState({});
-  
+
   // Fetch the dataset from API on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch('http://localhost:5000/ml/export');
         const result = await response.json();
-        
+
         if (response.ok) {
-          setHeaders(result.headers);
-          setData(result.dataset);
+          setHeaders(result.headers);  // Set headers from API response
+          setData(result.dataset);  // Set dataset from API response
 
           // Initialize includeColumns state to include all columns by default
           const initialColumns = result.headers.reduce((acc, header) => {

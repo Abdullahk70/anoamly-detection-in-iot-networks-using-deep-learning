@@ -74,32 +74,33 @@ const Sidebar = () => {
         {/* Main Menu */}
         <div>
           {menuItems.map((item, index) => (
-            <Link
-              key={index}
-              to={item.link}
-              className={`flex items-center gap-2 px-2 py-1 w-full text-left text-xs ${
-                location.pathname === item.link
-                  ? "bg-white shadow-md rounded-full transition-all duration-300 ease-in-out"
-                  : "hover:bg-gray-200"
-              }`}
-            >
-              <div
-                className={`w-6 h-6 flex items-center justify-center rounded-full ${
-                  location.pathname === item.link ? "bg-gray-300" : "bg-white"
-                }`}
-              >
-                <span className="text-gray-700">{item.icon}</span>
-              </div>
-              <span
-                className={`${
-                  location.pathname === item.link
-                    ? "font-bold"
-                    : "text-gray-600"
-                } text-xs`}
-              >
-                {item.label}
-              </span>
-            </Link>
+          <Link
+          key={index}
+          to={item.link}
+          className={`flex items-center gap-2 px-2 py-1 w-full text-left text-xs transition-all duration-300 ease-in-out transform ${
+            location.pathname === item.link
+              ? "bg-white shadow-md rounded-full scale-105"
+              : "hover:bg-gray-200 hover:scale-100"
+          }`}
+        >
+          <div
+            className={`w-6 h-6 flex items-center justify-center rounded-full transition-all duration-300 ease-in-out transform ${
+              location.pathname === item.link ? "bg-gray-300 scale-110" : "bg-white"
+            }`}
+          >
+            <span className="text-gray-700">{item.icon}</span>
+          </div>
+          <span
+            className={`transition-all duration-300 ${
+              location.pathname === item.link
+                ? "font-bold text-gray-800"
+                : "text-gray-600"
+            }`}
+          >
+            {item.label}
+          </span>
+        </Link>
+        
           ))}
         </div>
 

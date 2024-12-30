@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Table } from "react-bootstrap";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 import { Checkbox, FormControlLabel } from "@mui/material";
 import axios from "axios";
 
@@ -18,7 +27,7 @@ const FeatureSelection = () => {
         const importanceData = response.data.importanceData;
 
         // Extract all feature names from the importance data
-        const extractedFeatures = importanceData[1].importance.map(item => item.feature);
+        const extractedFeatures = importanceData[1].importance.map((item) => item.feature);
         setFeatures(extractedFeatures); // Features list
         setImportanceData(importanceData[1].importance); // Importance data for the graph
         setLoading(false);
@@ -58,7 +67,7 @@ const FeatureSelection = () => {
   // Prepare data for the chart, mapping feature importance values
   const chartData = importanceData.map((item) => ({
     feature: item.feature,
-    importance: item.importance
+    importance: item.importance,
   }));
 
   return (
@@ -67,7 +76,9 @@ const FeatureSelection = () => {
         {/* Header Section */}
         <div className="text-center space-y-3">
           <h1 className="text-4xl font-semibold text-gray-800">Feature Selection</h1>
-          <p className="text-md text-gray-600">Choose relevant features from your dataset and visualize their importance.</p>
+          <p className="text-md text-gray-600">
+            Choose relevant features from your dataset and visualize their importance.
+          </p>
         </div>
 
         {/* Main Content Section */}
@@ -125,8 +136,41 @@ const FeatureSelection = () => {
           </div>
         </div>
 
-        {/* Preview Selected Features Section */}
+        {/* Feature Importance Table */}
         <div className="bg-white rounded-xl shadow-lg p-5 border border-gray-200">
+          <h3 className="text-2xl font-semibold text-gray-800 mb-4">Feature Importance Table</h3>
+          <Table responsive className="w-full text-sm text-left text-gray-800">
+  <thead className="bg-gradient-to-r from-blue-500 to-teal-500 text-white shadow-md">
+    <tr>
+      <th className="py-3 px-6 text-lg font-semibold uppercase tracking-wider">Feature</th>
+      <th className="py-3 px-6 text-lg font-semibold uppercase tracking-wider text-center">
+        Importance
+      </th>
+    </tr>
+  </thead>
+  <tbody className="bg-white divide-y divide-gray-200">
+    {importanceData.map((item, index) => (
+      <tr
+        key={index}
+        className="hover:bg-teal-50 hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02]"
+      >
+        <td className="py-4 px-6 flex items-center gap-3">
+          <div className="w-3 h-3 rounded-full bg-gradient-to-br from-teal-500 to-blue-500"></div>
+          <span className="font-medium">{item.feature}</span>
+        </td>
+        <td className="py-4 px-6 text-center text-teal-600 font-semibold">
+          {item.importance.toFixed(4)}
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</Table>
+
+
+        </div>
+
+        {/* Preview Selected Features Section */}
+        {/* <div className="bg-white rounded-xl shadow-lg p-5 border border-gray-200">
           <h3 className="text-2xl font-semibold text-gray-800 mb-4">Preview Selected Features</h3>
           {selectedFeatures.length > 0 ? (
             <div className="space-y-2">
@@ -139,14 +183,20 @@ const FeatureSelection = () => {
           ) : (
             <div className="text-lg text-gray-500">No features selected</div>
           )}
-        </div>
+        </div> */}
 
         {/* Navigation Buttons */}
         <div className="flex justify-center gap-6 mt-8">
-          <Link to="/upload" className="bg-gradient-to-r bg-purple-600 text-white py-2 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200">
+          <Link
+            to="/upload"
+            className="bg-gradient-to-r bg-purple-600 text-white py-2 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200"
+          >
             Go to Data Upload
           </Link>
-          <Link to="/normalization" className="bg-gradient-to-r bg-purple-600 text-white py-2 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200">
+          <Link
+            to="/normalization"
+            className="bg-gradient-to-r bg-purple-600 text-white py-2 px-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-200"
+          >
             Go to Normalization/Scaling
           </Link>
         </div>

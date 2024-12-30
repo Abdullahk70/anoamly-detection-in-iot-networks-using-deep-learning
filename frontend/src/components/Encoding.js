@@ -41,7 +41,8 @@ const Encoding = () => {
     console.log(`Calling ${method} encoding API...`);
 
     try {
-      const response = await axios.post(endpoint, { data });
+      // const response = await axios.post(endpoint, { data });
+      const response = await axios.post(endpoint);
       console.log(`${method} Encoded Data:`, response.data);
       if (Array.isArray(response.data)) {
         const flattenedData = response.data.map((item) => Object.values(item)[0]);
