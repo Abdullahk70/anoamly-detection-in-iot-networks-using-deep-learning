@@ -70,7 +70,7 @@ const Encoding = () => {
 
         {/* Encoding Method Cards */}
         <div className="grid lg:grid-cols-3 gap-6">
-          <Card
+          {/* <Card
             className="encoding-card bg-white rounded-xl shadow-lg p-5 cursor-pointer transform hover:scale-105 transition-all duration-200"
             onClick={() => handleMethodSelect("One-Hot")}
           >
@@ -81,7 +81,7 @@ const Encoding = () => {
                 Transform categorical features into a binary vector.
               </p>
             </div>
-          </Card>
+          </Card> */}
           <Card
             className="encoding-card bg-white rounded-xl shadow-lg p-5 cursor-pointer transform hover:scale-105 transition-all duration-200"
             onClick={() => handleMethodSelect("Label Encoding")}

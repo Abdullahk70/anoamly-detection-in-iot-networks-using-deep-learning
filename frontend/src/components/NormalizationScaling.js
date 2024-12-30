@@ -97,13 +97,13 @@ const NormalizationScaling = () => {
         <div className="space-y-4">
           {/* Min-Max Scaling Section */}
           <div className="border border-gray-300 rounded-lg">
-            <button
+            {/* <button
               onClick={() => setOpenSection(openSection === "minmax" ? null : "minmax")}
               className="w-full px-4 py-3 flex justify-between items-center text-lg font-semibold bg-gray-100 hover:bg-green-100 transition-all"
             >
               Min-Max Scaling
               {openSection === "minmax" ? <FiChevronUp /> : <FiChevronDown />}
-            </button>
+            </button> */}
             {openSection === "minmax" && (
               <div className="p-4 transition-all">
                 <p className="text-gray-600 mb-4">Rescale data to a specific range (default: 0 to 1).</p>

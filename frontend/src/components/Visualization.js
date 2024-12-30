@@ -74,7 +74,7 @@ const Visualization = () => {
                 className="border border-gray-300 rounded-md p-1 text-sm"
               >
                 <option>Line Chart</option>
-                <option>Histogram</option>
+                {/* <option>Histogram</option> */}
                 <option>Scatter Plot</option>
               </select>
             </div>

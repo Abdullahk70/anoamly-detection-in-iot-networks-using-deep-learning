@@ -11,22 +11,54 @@ import SyncIcon from "@mui/icons-material/Sync";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 
 const Sidebar = () => {
-  const location = useLocation();  // Get the current location (route)
+  const location = useLocation(); // Get the current location (route)
 
   const menuItems = [
     { icon: <HomeIcon fontSize="small" />, label: "Home", link: "/" },
-    { icon: <UploadIcon fontSize="small" />, label: "Data Upload", link: "/upload" },
-    { icon: <TuneIcon fontSize="small" />, label: "Normalization/Sc", link: "/normalization" },
-    { icon: <PlaceIcon fontSize="small" />, label: "Feature Selection", link: "/feature-selection" },
-    { icon: <SyncIcon fontSize="small" />, label: "Encoding", link: "/encoding" },
+    {
+      icon: <UploadIcon fontSize="small" />,
+      label: "Data Upload",
+      link: "/upload",
+    },
+    {
+      icon: <TuneIcon fontSize="small" />,
+      label: "Normalization/Sc",
+      link: "/normalization",
+    },
+    {
+      icon: <PlaceIcon fontSize="small" />,
+      label: "Feature Selection",
+      link: "/feature-selection",
+    },
+    {
+      icon: <SyncIcon fontSize="small" />,
+      label: "Encoding",
+      link: "/encoding",
+    },
   ];
 
   const transformationItems = [
-    { icon: <VisibilityIcon fontSize="small" />, label: "Outlier Detection", link: "/outlier-detection" },
-    { icon: <VisibilityIcon fontSize="small" />, label: "Visualization", link: "/visualization" },
-    { icon: <SyncIcon fontSize="small" />, label: "Data Splitting", link: "/data-splitting" },
-    { icon: <FileDownloadIcon fontSize="small" />, label: "Export Data", link: "/export-data" },
-    { icon: <FileDownloadIcon fontSize="small" />, label: "Display Csv", link: "/csv-display" },
+    {
+      icon: <VisibilityIcon fontSize="small" />,
+      label: "Outlier Detection",
+      link: "/outlier-detection",
+    },
+    {
+      icon: <VisibilityIcon fontSize="small" />,
+      label: "Visualization",
+      link: "/visualization",
+    },
+    // { icon: <SyncIcon fontSize="small" />, label: "Data Splitting", link: "/data-splitting" },
+    {
+      icon: <FileDownloadIcon fontSize="small" />,
+      label: "Export Data",
+      link: "/export-data",
+    },
+    {
+      icon: <FileDownloadIcon fontSize="small" />,
+      label: "Display Csv",
+      link: "/csv-display",
+    },
   ];
 
   return (
@@ -34,9 +66,10 @@ const Sidebar = () => {
       {/* Top Section */}
       <div>
         <Link to="../">
-        <h1 className="text-xl font-extrabold px-3 py-2 text-center mt-3 mb-2 text-sm">FeatureENGR</h1>
+          <h1 className="text-xl font-extrabold px-3 py-2 text-center mt-3 mb-2 text-sm">
+            FeatureENGR
+          </h1>
         </Link>
-      
 
         {/* Main Menu */}
         <div>
@@ -59,7 +92,9 @@ const Sidebar = () => {
               </div>
               <span
                 className={`${
-                  location.pathname === item.link ? "font-bold" : "text-gray-600"
+                  location.pathname === item.link
+                    ? "font-bold"
+                    : "text-gray-600"
                 } text-xs`}
               >
                 {item.label}
@@ -95,7 +130,9 @@ const Sidebar = () => {
               </div>
               <span
                 className={`${
-                  location.pathname === item.link ? "font-bold" : "text-gray-600"
+                  location.pathname === item.link
+                    ? "font-bold"
+                    : "text-gray-600"
                 } text-xs`}
               >
                 {item.label}
