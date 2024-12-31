@@ -15,6 +15,8 @@ function App() {
       <Route path="/data-splitting" element={<HomeScreen screen={"data-splitting"}/>}/>
       <Route path="/export-data" element={<HomeScreen screen={"export-data"}/>}/>
       <Route path="/csv-display" element={<HomeScreen screen={"csv"}/>}/>
+      <Route path="/faq" element={<HomeScreen screen={"faq"}/>}/>
+
     </Routes>
   );
 }

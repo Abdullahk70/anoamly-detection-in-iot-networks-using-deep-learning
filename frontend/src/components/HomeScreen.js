@@ -10,6 +10,7 @@ import OutlierDetection from './OutlierDetection'
 import DataSplitting from './DataSplitting'
 import ExportData from './ExportData'
 import CsvDisplay from './CsvDisplay'
+import FAQ from './FAQ'
 
 const HomeScreen = (props) => {
   return (
@@ -27,6 +28,7 @@ const HomeScreen = (props) => {
     {props.screen=="data-splitting" && <DataSplitting/>}
     {props.screen=="export-data" && <ExportData/>}
     {props.screen=="csv" && <CsvDisplay/>}
+    {props.screen=="faq" && <FAQ/>}
     </div>
   </div>
   )

@@ -169,6 +169,9 @@ const Sidebar = () => {
             </div>
             <span className="text-gray-600 text-xs">Settings</span>
           </button>
+
+
+        
           <button
             onClick={() => alert("Logout Clicked")}
             className="flex items-center gap-2 px-2 py-1 w-full text-left text-xs hover:bg-gray-200"
@@ -179,6 +182,17 @@ const Sidebar = () => {
             <span className="text-gray-600 text-xs">Log Out</span>
           </button>
         </div>
+        <Link to="/faq">
+         <button
+            
+            className="flex items-center gap-2 px-2 py-1 w-full text-left text-xs hover:bg-gray-200"
+          >
+            <div className="w-6 h-6 flex items-center justify-center rounded-full bg-white">
+              <TuneIcon className="text-gray-700" />
+            </div>
+            <span className="text-gray-600 text-xs">FAQ's</span>
+          </button>
+         </Link>
       </div>
     </div>
   );
